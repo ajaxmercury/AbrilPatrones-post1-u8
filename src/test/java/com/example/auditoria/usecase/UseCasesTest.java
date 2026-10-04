@@ -7,10 +7,12 @@ import com.example.auditoria.domain.valueobject.PlanRemediacion;
 import com.example.auditoria.domain.valueobject.Severidad;
 import com.example.auditoria.usecase.impl.CerrarHallazgoService;
 import com.example.auditoria.usecase.impl.ConsultarHallazgoService;
+import com.example.auditoria.usecase.impl.ConsultarHistorialService;
 import com.example.auditoria.usecase.impl.IniciarRemediacionService;
 import com.example.auditoria.usecase.impl.ReabrirHallazgoService;
 import com.example.auditoria.usecase.impl.RegistrarHallazgoService;
 import com.example.auditoria.usecase.port.HallazgoRepositoryPort;
+import com.example.auditoria.usecase.port.HistorialAuditoriaPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,11 +30,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class UseCasesTest {
 
     private InMemoryHallazgoRepository repository;
+    private InMemoryHistorialAuditoriaPort historialPort;
     private RegistrarHallazgoService registrarService;
     private IniciarRemediacionService iniciarRemediacionService;
     private CerrarHallazgoService cerrarService;
     private ReabrirHallazgoService reabrirService;
     private ConsultarHallazgoService consultarService;
+    private ConsultarHistorialService consultarHistorialService;
 
     static class InMemoryHallazgoRepository implements HallazgoRepositoryPort {
         private final Map<HallazgoId, HallazgoAuditoria> database = new HashMap<>();
@@ -54,14 +58,32 @@ class UseCasesTest {
         }
     }
 
+    static class InMemoryHistorialAuditoriaPort implements HistorialAuditoriaPort {
+        private final List<CambioEstadoView> cambios = new ArrayList<>();
+
+        @Override
+        public void registrar(CambioEstadoView cambio) {
+            cambios.add(cambio);
+        }
+
+        @Override
+        public List<CambioEstadoView> listarPorHallazgo(HallazgoId hallazgoId) {
+            return cambios.stream()
+                    .filter(c -> c.hallazgoId().equals(hallazgoId.valor()))
+                    .toList();
+        }
+    }
+
     @BeforeEach
     void setUp() {
         repository = new InMemoryHallazgoRepository();
+        historialPort = new InMemoryHistorialAuditoriaPort();
         registrarService = new RegistrarHallazgoService(repository);
-        iniciarRemediacionService = new IniciarRemediacionService(repository);
-        cerrarService = new CerrarHallazgoService(repository);
-        reabrirService = new ReabrirHallazgoService(repository);
+        iniciarRemediacionService = new IniciarRemediacionService(repository, historialPort);
+        cerrarService = new CerrarHallazgoService(repository, historialPort);
+        reabrirService = new ReabrirHallazgoService(repository, historialPort);
         consultarService = new ConsultarHallazgoService(repository);
+        consultarHistorialService = new ConsultarHistorialService(historialPort);
     }
 
     @Test
@@ -86,7 +108,7 @@ class UseCasesTest {
     }
 
     @Test
-    @DisplayName("Flujo de remediación, cierre y reapertura a través de casos de uso")
+    @DisplayName("Flujo de remediación, cierre y reapertura registra cada transición en la bitácora")
     void flujoCasosDeUso() {
         HallazgoId id = registrarService.registrar(new RegistrarHallazgoCommand(
                 "Hallazgo 1", "Desc", "Operaciones", Severidad.MEDIA, LocalDate.now()
@@ -108,6 +130,16 @@ class UseCasesTest {
         HallazgoResponse reabierto = consultarService.buscarPorId(id);
         assertEquals("REABIERTO", reabierto.estado());
         assertNull(reabierto.fechaCierre());
+
+        List<CambioEstadoView> historial = consultarHistorialService.listarPorHallazgo(id);
+        assertEquals(3, historial.size());
+        assertEquals("ABIERTO", historial.get(0).estadoAnterior());
+        assertEquals("EN_REMEDIACION", historial.get(0).estadoNuevo());
+        assertEquals("EN_REMEDIACION", historial.get(1).estadoAnterior());
+        assertEquals("CERRADO", historial.get(1).estadoNuevo());
+        assertEquals("CERRADO", historial.get(2).estadoAnterior());
+        assertEquals("REABIERTO", historial.get(2).estadoNuevo());
+        assertEquals("auditor_jefe", historial.get(2).usuario());
     }
 
     @Test
