@@ -3,11 +3,17 @@ package com.example.auditoria.adapter.in.web;
 import com.example.auditoria.domain.valueobject.EstadoHallazgo;
 import com.example.auditoria.domain.valueobject.HallazgoId;
 import com.example.auditoria.domain.valueobject.TransicionInvalidaException;
+import com.example.auditoria.usecase.CambioEstadoView;
 import com.example.auditoria.usecase.CerrarHallazgoUseCase;
 import com.example.auditoria.usecase.ConsultarHallazgoUseCase;
+import com.example.auditoria.usecase.ConsultarHistorialUseCase;
+import com.example.auditoria.usecase.ConteoCategoria;
+import com.example.auditoria.usecase.DashboardAuditoriaView;
 import com.example.auditoria.usecase.HallazgoResponse;
 import com.example.auditoria.usecase.IniciarRemediacionUseCase;
+import com.example.auditoria.usecase.ObtenerDashboardAuditoriaUseCase;
 import com.example.auditoria.usecase.PlanRemediacionResponse;
+import com.example.auditoria.usecase.PromedioCategoria;
 import com.example.auditoria.usecase.ReabrirHallazgoUseCase;
 import com.example.auditoria.usecase.RegistrarHallazgoUseCase;
 import org.junit.jupiter.api.DisplayName;
@@ -19,6 +25,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -54,6 +61,12 @@ class HallazgoControllerTest {
 
     @MockBean
     private ConsultarHallazgoUseCase consultarUseCase;
+
+    @MockBean
+    private ConsultarHistorialUseCase consultarHistorialUseCase;
+
+    @MockBean
+    private ObtenerDashboardAuditoriaUseCase obtenerDashboardUseCase;
 
     @Test
     @DisplayName("POST /api/hallazgos retorna 201 Created con hallazgoId")
@@ -186,5 +199,40 @@ class HallazgoControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(id.toString()))
                 .andExpect(jsonPath("$[0].titulo").value("Acceso no revocado"));
+    }
+
+    @Test
+    @DisplayName("GET /api/hallazgos/dashboard retorna agregaciones 200 OK")
+    void obtenerDashboardRetorna200() throws Exception {
+        when(obtenerDashboardUseCase.obtenerDashboard()).thenReturn(new DashboardAuditoriaView(
+                List.of(new ConteoCategoria("CRITICA", 4)),
+                List.of(new ConteoCategoria("CERRADO", 2)),
+                List.of(new PromedioCategoria("Finanzas", 14.5))
+        ));
+
+        mockMvc.perform(get("/api/hallazgos/dashboard"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.porSeveridad[0].categoria").value("CRITICA"))
+                .andExpect(jsonPath("$.porSeveridad[0].total").value(4))
+                .andExpect(jsonPath("$.promedioDiasCierrePorArea[0].area").value("Finanzas"))
+                .andExpect(jsonPath("$.promedioDiasCierrePorArea[0].promedioDias").value(14.5));
+    }
+
+    @Test
+    @DisplayName("GET /api/hallazgos/{id}/historial retorna trazabilidad cronológica 200 OK")
+    void consultarHistorialRetorna200() throws Exception {
+        UUID id = UUID.randomUUID();
+        when(consultarHistorialUseCase.listarPorHallazgo(HallazgoId.de(id))).thenReturn(List.of(
+                new CambioEstadoView(
+                        UUID.randomUUID(), id, "ABIERTO", "EN_REMEDIACION",
+                        "auditor1", "Inicio", LocalDateTime.now()
+                )
+        ));
+
+        mockMvc.perform(get("/api/hallazgos/{id}/historial", id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].estadoAnterior").value("ABIERTO"))
+                .andExpect(jsonPath("$[0].estadoNuevo").value("EN_REMEDIACION"))
+                .andExpect(jsonPath("$[0].usuario").value("auditor1"));
     }
 }

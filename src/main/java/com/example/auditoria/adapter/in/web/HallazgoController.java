@@ -6,10 +6,14 @@ import com.example.auditoria.adapter.in.web.dto.RegistrarHallazgoRequest;
 import com.example.auditoria.adapter.in.web.dto.RegistroResponse;
 import com.example.auditoria.domain.valueobject.HallazgoId;
 import com.example.auditoria.domain.valueobject.PlanRemediacion;
+import com.example.auditoria.usecase.CambioEstadoView;
 import com.example.auditoria.usecase.CerrarHallazgoUseCase;
 import com.example.auditoria.usecase.ConsultarHallazgoUseCase;
+import com.example.auditoria.usecase.ConsultarHistorialUseCase;
+import com.example.auditoria.usecase.DashboardAuditoriaView;
 import com.example.auditoria.usecase.HallazgoResponse;
 import com.example.auditoria.usecase.IniciarRemediacionUseCase;
+import com.example.auditoria.usecase.ObtenerDashboardAuditoriaUseCase;
 import com.example.auditoria.usecase.ReabrirHallazgoUseCase;
 import com.example.auditoria.usecase.RegistrarHallazgoCommand;
 import com.example.auditoria.usecase.RegistrarHallazgoUseCase;
@@ -39,18 +43,24 @@ public class HallazgoController {
     private final CerrarHallazgoUseCase cerrarUseCase;
     private final ReabrirHallazgoUseCase reabrirUseCase;
     private final ConsultarHallazgoUseCase consultarUseCase;
+    private final ConsultarHistorialUseCase consultarHistorialUseCase;
+    private final ObtenerDashboardAuditoriaUseCase obtenerDashboardUseCase;
 
     public HallazgoController(
             RegistrarHallazgoUseCase registrarUseCase,
             IniciarRemediacionUseCase iniciarRemediacionUseCase,
             CerrarHallazgoUseCase cerrarUseCase,
             ReabrirHallazgoUseCase reabrirUseCase,
-            ConsultarHallazgoUseCase consultarUseCase) {
+            ConsultarHallazgoUseCase consultarUseCase,
+            ConsultarHistorialUseCase consultarHistorialUseCase,
+            ObtenerDashboardAuditoriaUseCase obtenerDashboardUseCase) {
         this.registrarUseCase = registrarUseCase;
         this.iniciarRemediacionUseCase = iniciarRemediacionUseCase;
         this.cerrarUseCase = cerrarUseCase;
         this.reabrirUseCase = reabrirUseCase;
         this.consultarUseCase = consultarUseCase;
+        this.consultarHistorialUseCase = consultarHistorialUseCase;
+        this.obtenerDashboardUseCase = obtenerDashboardUseCase;
     }
 
     @PostMapping
@@ -108,6 +118,18 @@ public class HallazgoController {
                 "hallazgoId", id,
                 "estado", "REABIERTO"
         ));
+    }
+
+    @GetMapping("/dashboard")
+    public ResponseEntity<DashboardAuditoriaView> obtenerDashboard() {
+        DashboardAuditoriaView dashboard = obtenerDashboardUseCase.obtenerDashboard();
+        return ResponseEntity.ok(dashboard);
+    }
+
+    @GetMapping("/{id}/historial")
+    public ResponseEntity<List<CambioEstadoView>> consultarHistorial(@PathVariable UUID id) {
+        List<CambioEstadoView> historial = consultarHistorialUseCase.listarPorHallazgo(HallazgoId.de(id));
+        return ResponseEntity.ok(historial);
     }
 
     @GetMapping("/{id}")
