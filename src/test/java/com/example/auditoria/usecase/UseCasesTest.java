@@ -56,6 +56,21 @@ class UseCasesTest {
         public List<HallazgoAuditoria> buscarTodos() {
             return new ArrayList<>(database.values());
         }
+
+        @Override
+        public List<ConteoCategoria> contarPorSeveridad() {
+            return List.of(new ConteoCategoria("CRITICA", 1));
+        }
+
+        @Override
+        public List<ConteoCategoria> contarPorEstado() {
+            return List.of(new ConteoCategoria("ABIERTO", 1));
+        }
+
+        @Override
+        public List<PromedioCategoria> promedioDiasCierrePorArea() {
+            return List.of(new PromedioCategoria("TI", 12.5));
+        }
     }
 
     static class InMemoryHistorialAuditoriaPort implements HistorialAuditoriaPort {
@@ -147,5 +162,21 @@ class UseCasesTest {
     void buscarInexistenteLanzaNotFound() {
         HallazgoId noExiste = HallazgoId.nuevo();
         assertThrows(HallazgoNotFoundException.class, () -> consultarService.buscarPorId(noExiste));
+    }
+
+    @Test
+    @DisplayName("Obtener dashboard consolida conteos por severidad, estado y promedio de días")
+    void obtenerDashboardRetornaVistaConsolidada() {
+        com.example.auditoria.usecase.impl.ObtenerDashboardAuditoriaService dashboardService =
+                new com.example.auditoria.usecase.impl.ObtenerDashboardAuditoriaService(repository);
+
+        DashboardAuditoriaView dashboard = dashboardService.obtenerDashboard();
+        assertNotNull(dashboard);
+        assertEquals(1, dashboard.porSeveridad().size());
+        assertEquals("CRITICA", dashboard.porSeveridad().get(0).categoria());
+        assertEquals(1, dashboard.porEstado().size());
+        assertEquals("ABIERTO", dashboard.porEstado().get(0).categoria());
+        assertEquals(1, dashboard.promedioDiasCierrePorArea().size());
+        assertEquals(12.5, dashboard.promedioDiasCierrePorArea().get(0).promedioDias());
     }
 }

@@ -2,6 +2,8 @@ package com.example.auditoria.usecase.port;
 
 import com.example.auditoria.domain.entity.HallazgoAuditoria;
 import com.example.auditoria.domain.valueobject.HallazgoId;
+import com.example.auditoria.usecase.ConteoCategoria;
+import com.example.auditoria.usecase.PromedioCategoria;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,4 +15,10 @@ public interface HallazgoRepositoryPort {
     Optional<HallazgoAuditoria> buscarPorId(HallazgoId id);
 
     List<HallazgoAuditoria> buscarTodos();
+
+    List<ConteoCategoria> contarPorSeveridad();
+
+    List<ConteoCategoria> contarPorEstado();
+
+    List<PromedioCategoria> promedioDiasCierrePorArea();
 }
