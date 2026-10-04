@@ -1,0 +1,7 @@
+﻿{
+  "titulo": "Falta de segregacion de funciones",
+  "descripcion": "El responsable de compras aprueba los pagos a proveedores",
+  "area": "Finanzas",
+  "severidad": "ALTA",
+  "fechaDeteccion": "2026-08-10"
+}
