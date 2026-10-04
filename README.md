@@ -193,9 +193,18 @@ Las capturas de pantalla fueron obtenidas de ejecuciones reales del servidor Spr
 | **PATCH 200 OK (Reabrir)** | Reapertura justificada de un hallazgo cerrado | ![Reabrir 200](docs/p1-reabrir-200.png) |
 | **GET 200 OK (Listar)** | Consulta del inventario de hallazgos registrados | ![Listar](docs/p1-listar.png) |
 
+### 7.2 Parte 2 — Dashboard Ejecutivo y Trazabilidad Forense (Bitácora Append-Only)
+
+| Checkpoint | Solicitud y Código HTTP | Captura de Pantalla |
+|---|---|---|
+| **GET 200 OK (Dashboard)** | Agregaciones de conteo por severidad, estado y promedio de días de cierre por área | ![Dashboard 200](docs/p2-dashboard.png) |
+| **GET 200 OK (Historial)** | Trazabilidad cronológica de transiciones con actor (`X-Usuario`) y motivo | ![Historial 200](docs/p2-historial.png) |
+| **H2 Console (Tabla Append-Only)** | Consulta directa en H2 a la tabla inmutable `historial_cambios_estado` | ![H2 Bitácora](docs/p2-h2-historial.png) |
+
 ---
 
 ## 8. Conclusiones
 
 1. **Aislamiento del Dominio y Resiliencia:** La implementación estricta de Clean Architecture demostró que el núcleo de negocio (`HallazgoAuditoria`, `EstadoHallazgo`, `PlanRemediacion`) permanece completamente ajeno a los detalles de infraestructura, permitiendo probar exhaustivamente invariantes y transiciones con pruebas unitarias instantáneas sin levantar contextos pesados de Spring.
-2. **Pragmatismo Arquitectónico:** El análisis costo-beneficio confirmó que patrones de alta complejidad como CQRS y Event Sourcing no deben adoptarse por defecto; una arquitectura limpia debe resolver los requerimientos de agregación y trazabilidad mediante extensiones naturales (proyecciones en el mismo repositorio y bitácora append-only atómica) mientras la escala operativa no demande una segregación física de modelos.
+2. **Pragmatismo Arquitectónico frente a CQRS y Event Sourcing:** El análisis costo-beneficio confirmó que patrones de alta complejidad como CQRS y Event Sourcing no deben adoptarse por defecto; una arquitectura limpia debe resolver los requerimientos de agregación y trazabilidad mediante extensiones naturales (proyecciones en el mismo repositorio y bitácora append-only atómica) mientras la escala operativa no demande una segregación física de modelos.
+3. **Criterios Objetivos de Evolución:** La arquitectura actual soporta perfectamente la carga organizacional prevista manteniendo consistencia transaccional ACID estricta; no obstante, si el sistema creciera exponencialmente superando los 10 millones de hallazgos anuales con alta contención de bloqueos o surgieran requerimientos formales de *event replay* para reconstrucción temporal forense de estados en auditorías judiciales, la separación física en modelos Command/Query y la transición hacia un Event Store dedicado se reconsiderarían bajo justificación técnica medible.

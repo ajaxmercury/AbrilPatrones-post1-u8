@@ -1,0 +1,175 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>GET /api/hallazgos/{id}/historial (200 OK)</title>
+  <style>
+  body {
+    background: #0f172a;
+    color: #f8fafc;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    padding: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+  .window {
+    background: #1e293b;
+    border-radius: 12px;
+    box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.6);
+    border: 1px solid #334155;
+    width: 900px;
+    overflow: hidden;
+  }
+  .header {
+    background: #0f172a;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #334155;
+  }
+  .dots {
+    display: flex;
+    gap: 8px;
+  }
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+  .dot.red { background: #ef4444; }
+  .dot.yellow { background: #f59e0b; }
+  .dot.green { background: #10b981; }
+  .title {
+    font-size: 13px;
+    color: #94a3b8;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+  .content {
+    padding: 24px;
+    font-family: "JetBrains Mono", Consolas, "Courier New", monospace;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .command-bar {
+    background: #0f172a;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    border: 1px solid #334155;
+    color: #38bdf8;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .prompt-char {
+    color: #a855f7;
+    font-weight: bold;
+  }
+  .status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 15px;
+  }
+  .status-201 { background: #064e3b; color: #34d399; border: 1px solid #059669; }
+  .status-200 { background: #064e3b; color: #34d399; border: 1px solid #059669; }
+  .status-400 { background: #450a0a; color: #f87171; border: 1px solid #dc2626; }
+  .status-404 { background: #451a03; color: #fb923c; border: 1px solid #d97706; }
+  .section-label {
+    color: #64748b;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 15px;
+    margin-bottom: 6px;
+  }
+  pre {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 14px;
+    overflow-x: auto;
+    color: #e2e8f0;
+    margin: 0 0 15px 0;
+  }
+  .meta {
+    font-size: 12px;
+    color: #64748b;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    padding-top: 12px;
+    border-top: 1px solid #334155;
+  }
+</style>
+</head>
+<body>
+  <div class="window">
+    <div class="header">
+      <div class="dots">
+        <div class="dot red"></div>
+        <div class="dot yellow"></div>
+        <div class="dot green"></div>
+      </div>
+      <div class="title">GET /api/hallazgos/{id}/historial (200 OK) â€” AbrilPatrones-post1-u8</div>
+      <div></div>
+    </div>
+    <div class="content">
+      <div class="command-bar">
+        <span class="prompt-char">$</span>
+        <span>curl -i -X GET http://localhost:8080/api/hallazgos/597a3a0e-a67b-43de-b646-bd2668fb3e80/historial</span>
+      </div>
+      <div>
+        <span class="status-badge status-200">HTTP/1.1 200 OK</span>
+      </div>
+      <div class="section-label">HTTP Response Headers</div>
+      <pre>HTTP/1.1 200 OK
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sun, 04 Oct 2026 20:50:17 GMT</pre>
+      <div class="section-label">Response Body (JSON)</div>
+      <pre>[
+  {
+    "id": "a75d400e-23e0-4b77-b765-a72a3513c2a4",
+    "hallazgoId": "597a3a0e-a67b-43de-b646-bd2668fb3e80",
+    "estadoAnterior": "ABIERTO",
+    "estadoNuevo": "EN_REMEDIACION",
+    "usuario": "analista_seguridad",
+    "motivo": "Migracion a HashiCorp Vault",
+    "fechaHora": "2026-10-04T15:50:16.803"
+  },
+  {
+    "id": "74ce495d-1a36-4518-89c1-0ac66f84ad65",
+    "hallazgoId": "597a3a0e-a67b-43de-b646-bd2668fb3e80",
+    "estadoAnterior": "EN_REMEDIACION",
+    "estadoNuevo": "CERRADO",
+    "usuario": "auditor_lider",
+    "motivo": "Cierre de hallazgo tras verificar cumplimiento del plan de remediaciÃ³n",
+    "fechaHora": "2026-10-04T15:50:16.846"
+  },
+  {
+    "id": "d987e0cd-35e6-4586-951c-ea3e3e65b01c",
+    "hallazgoId": "597a3a0e-a67b-43de-b646-bd2668fb3e80",
+    "estadoAnterior": "CERRADO",
+    "estadoNuevo": "REABIERTO",
+    "usuario": "comite_auditoria",
+    "motivo": "Se encontro persistencia de clave en historial de git no purgado",
+    "fechaHora": "2026-10-04T15:50:16.892"
+  }
+]</pre>
+      <div class="meta">
+        <span>Framework: Spring Boot 3.3.4 (Java 17)</span>
+        <span>Entorno: Clean Architecture Â· Puerto: 8080</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

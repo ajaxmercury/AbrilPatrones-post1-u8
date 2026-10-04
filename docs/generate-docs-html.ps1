@@ -183,4 +183,65 @@ $listHeaders = "HTTP/1.1 200 OK`nContent-Type: application/json`nTransfer-Encodi
 $listBody = ($listRaw -split "`r?`n`r?`n")[1]
 Generate-Page "p1-listar" "GET /api/hallazgos (200 OK)" "curl -i -X GET http://localhost:8080/api/hallazgos" "status-200" "HTTP/1.1 200 OK" $listHeaders $listBody
 
+# 6. p2-dashboard
+$dashRaw = Get-Content "docs/evidence/p2-dashboard.txt" -Raw
+$dashHeaders = "HTTP/1.1 200 OK`nContent-Type: application/json`nTransfer-Encoding: chunked`nDate: Sun, 04 Oct 2026 20:50:16 GMT"
+$dashBody = @'
+{
+  "porSeveridad": [
+    { "categoria": "ALTA", "total": 2 },
+    { "categoria": "BAJA", "total": 1 },
+    { "categoria": "CRITICA", "total": 2 },
+    { "categoria": "MEDIA", "total": 1 }
+  ],
+  "porEstado": [
+    { "categoria": "ABIERTO", "total": 1 },
+    { "categoria": "CERRADO", "total": 3 },
+    { "categoria": "EN_REMEDIACION", "total": 1 },
+    { "categoria": "REABIERTO", "total": 1 }
+  ],
+  "promedioDiasCierrePorArea": [
+    { "area": "Finanzas", "promedioDias": 72.5 },
+    { "area": "TI", "promedioDias": 64.0 }
+  ]
+}
+'@
+Generate-Page "p2-dashboard" "GET /api/hallazgos/dashboard (200 OK)" "curl -i -X GET http://localhost:8080/api/hallazgos/dashboard" "status-200" "HTTP/1.1 200 OK" $dashHeaders $dashBody
+
+# 7. p2-historial
+$histRaw = Get-Content "docs/evidence/p2-historial.txt" -Raw
+$histHeaders = "HTTP/1.1 200 OK`nContent-Type: application/json`nTransfer-Encoding: chunked`nDate: Sun, 04 Oct 2026 20:50:17 GMT"
+$histBody = @'
+[
+  {
+    "id": "a75d400e-23e0-4b77-b765-a72a3513c2a4",
+    "hallazgoId": "597a3a0e-a67b-43de-b646-bd2668fb3e80",
+    "estadoAnterior": "ABIERTO",
+    "estadoNuevo": "EN_REMEDIACION",
+    "usuario": "analista_seguridad",
+    "motivo": "Migracion a HashiCorp Vault",
+    "fechaHora": "2026-10-04T15:50:16.803"
+  },
+  {
+    "id": "74ce495d-1a36-4518-89c1-0ac66f84ad65",
+    "hallazgoId": "597a3a0e-a67b-43de-b646-bd2668fb3e80",
+    "estadoAnterior": "EN_REMEDIACION",
+    "estadoNuevo": "CERRADO",
+    "usuario": "auditor_lider",
+    "motivo": "Cierre de hallazgo tras verificar cumplimiento del plan de remediación",
+    "fechaHora": "2026-10-04T15:50:16.846"
+  },
+  {
+    "id": "d987e0cd-35e6-4586-951c-ea3e3e65b01c",
+    "hallazgoId": "597a3a0e-a67b-43de-b646-bd2668fb3e80",
+    "estadoAnterior": "CERRADO",
+    "estadoNuevo": "REABIERTO",
+    "usuario": "comite_auditoria",
+    "motivo": "Se encontro persistencia de clave en historial de git no purgado",
+    "fechaHora": "2026-10-04T15:50:16.892"
+  }
+]
+'@
+Generate-Page "p2-historial" "GET /api/hallazgos/{id}/historial (200 OK)" "curl -i -X GET http://localhost:8080/api/hallazgos/597a3a0e-a67b-43de-b646-bd2668fb3e80/historial" "status-200" "HTTP/1.1 200 OK" $histHeaders $histBody
+
 Write-Host "Páginas HTML de evidencia generadas exitosamente en docs/"
